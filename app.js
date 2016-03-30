@@ -5,8 +5,18 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var mongoose = require('mongoose');
+//register model with global mongoose object
+require('./models/Posts');
+require('./models/Comments');
+
+//connect to local MongoDB instance
+mongoose.connect('mongodb://localhost/news');
+
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
+
 
 var app = express();
 
