@@ -5,10 +5,18 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+//mongoose
 var mongoose = require('mongoose');
+//passport
+var passport = require('passport');
+
 //register model with global mongoose object
 require('./models/Posts');
 require('./models/Comments');
+require('./models/Users');
+
+//passport config
+require('./config/passport');
 
 //connect to local MongoDB instance
 mongoose.connect('mongodb://localhost/news');
@@ -66,5 +74,7 @@ app.use(function(err, req, res, next) {
   });
 });
 
+//passport
+app.use(passport.initialize());
 
 module.exports = app;

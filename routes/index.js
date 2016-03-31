@@ -12,6 +12,10 @@ var mongoose = require('mongoose');
 var Post = mongoose.model('Post');
 var Comment = mongoose.model('Comment');
 
+var jwt = require('express-jwt');
+var auth = jwt({secret: 'SECRET', userProperty: 'payload'});
+
+
 //GET all posts
 router.get('/posts', function(req, res, next) {
 	Post.find(function(err, posts){
@@ -21,8 +25,10 @@ router.get('/posts', function(req, res, next) {
 })
 
 //POST posts
-router.post('/posts', function(req, res, next){
+router.post('/posts', auth, function(req, res, next){
 	var post = new Post(req.body);
+	//getting author's name from token's payload
+	post.author = req.payload.username;
 
 	post.save(function(err, post){
 		if(err){return next(err);}
@@ -54,7 +60,7 @@ router.get('/posts/:post', function(req, res, next) {
 });
 
 //PUT to upvote post
-router.put('/posts/:post/upvote', function(req, res, next){
+router.put('/posts/:post/upvote', auth, function(req, res, next){
 	req.post.upvote(function(err, post){
 		if(err) {return next(err);}
 		res.json(post);
@@ -62,8 +68,11 @@ router.put('/posts/:post/upvote', function(req, res, next){
 });
 
 //POST comment to post
-router.post('/posts/:post/comments', function(req, res, next){
+router.post('/posts/:post/comments', auth function(req, res, next){
 	var comment = new Comment(req.body);
+
+	//getting author's name from token's payload
+	comment.author = req.payload.username;
 
 	comment.save(function(err,comment){
 		if(err){return next(err);}
@@ -97,6 +106,16 @@ router.put('/posts/:post/comments/:comment/upvote', function(req, res, next){
 	});
 });
 
+//POST for user login and authentication
+router.post('/register', function(req, res, next){
+	if(req.body.username || !req.body.password){
+		return res.status(400).json({message: 'Please fill out all forms'});
+	}
+
+	var user = new User();
+	user.username = req.body.username;
+	user.setPassword(req.body.password);
+});
 
 
 
