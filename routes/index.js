@@ -11,8 +11,10 @@ module.exports = router;
 var mongoose = require('mongoose');
 var Post = mongoose.model('Post');
 var Comment = mongoose.model('Comment');
+var User = mongoose.model('User');
 
 var jwt = require('express-jwt');
+var passport = require('passport');
 var auth = jwt({secret: 'SECRET', userProperty: 'payload'});
 
 
@@ -25,6 +27,7 @@ router.get('/posts', function(req, res, next) {
 })
 
 //POST posts
+//auth requires authentication for posts
 router.post('/posts', auth, function(req, res, next){
 	var post = new Post(req.body);
 	//getting author's name from token's payload
@@ -68,7 +71,7 @@ router.put('/posts/:post/upvote', auth, function(req, res, next){
 });
 
 //POST comment to post
-router.post('/posts/:post/comments', auth function(req, res, next){
+router.post('/posts/:post/comments', auth, function(req, res, next){
 	var comment = new Comment(req.body);
 
 	//getting author's name from token's payload
@@ -106,16 +109,42 @@ router.put('/posts/:post/comments/:comment/upvote', function(req, res, next){
 	});
 });
 
-//POST for user login and authentication
+//POST for user registration and authentication
 router.post('/register', function(req, res, next){
-	if(req.body.username || !req.body.password){
+	if(!req.body.username || !req.body.password){
 		return res.status(400).json({message: 'Please fill out all forms'});
 	}
 
-	var user = new User();
-	user.username = req.body.username;
-	user.setPassword(req.body.password);
+  var user = new User();
+  user.username = req.body.username;
+  user.setPassword(req.body.password)
+
+  user.save(function (err){
+    if(err){ return next(err); }
+
+    return res.json({token: user.generateJWT()})
+  });
 });
+
+//POST for user login and authentication
+router.post('/login', function(req, res, next){
+	if(!req.body.username || !req.body.password ){
+		return res.status(400).json({message: 'Please fill out all the fields'})
+	}
+
+	passport.authenticate('local', function(err, user, info){
+		if(err) {return next(err);}
+
+		if(user){
+			return res.json({token: user.generateJWT()});
+		} else{
+			return res.status(401).json(info);
+		}
+	})(req, res, next);
+
+});
+
+
 
 
 
