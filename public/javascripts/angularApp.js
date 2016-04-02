@@ -119,7 +119,7 @@ app.controller('MainCtrl', ['$scope', 'posts', 'auth',
 	function($scope, posts, auth){
 		$scope.test = 'Hello World';
 		$scope.posts = posts.posts;
-		$scope.isLoggedIn = auth.isLoggedIn();
+		$scope.isLoggedIn = auth.isLoggedIn;
 
 		$scope.addPost = function(){
 			//prevents user from adding blank title
